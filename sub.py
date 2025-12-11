@@ -1,6 +1,8 @@
 import pandas as pd
 import openpyxl 
 import os 
+
+
 """
 df = pd.read_excel('reseau_en_arbre.xlsx')
 
@@ -12,9 +14,9 @@ df_infrastructure = df[['id_batiment', 'infra_id', 'infra_type', 'longueur']]
 
 df_batiment.to_csv('batiments2.csv', index=False)
 df_infrastructure.to_csv('infrastructures2.csv', index=False)
-"""
 
-"""
+
+
 if os.path.exists('batiments2.csv'):
     df_ancien = pd.read_csv('batiments2.csv')
 else:
@@ -77,7 +79,7 @@ if os.path.exists(fichier_cible) and os.path.exists(fichier_source):
         print(f" Erreur : La colonne ID nommée '{colonne_id}' n'a pas été trouvée dans l'un des fichiers.")
 else:
     print(" Un des fichiers n'existe pas.")
-"""
+
 
 fichier = 'infrastructures2.csv'
 
@@ -96,9 +98,59 @@ if os.path.exists(fichier):
 
     fichier_sortie = 'infrastructures_a_remplacer.csv'
     df_filtre.to_csv(fichier_sortie, index=False)
-    print(f"✅ Fichier créé : {fichier_sortie}")
+    print(f"Fichier créé : {fichier_sortie}")
 
 
     
 else:
     print(f"Le fichier {fichier} n'existe pas.")
+"""
+    
+
+dossier_data = r"C:\Users\HP\OneDrive\Documents\Work_project\ProjetQGIS\bd"
+
+fichier_cible = os.path.join(dossier_data, 'infrastructures_a_remplacer.csv')
+fichier_source = os.path.join(dossier_data, 'batiments2.csv')              
+
+if os.path.exists(fichier_cible) and os.path.exists(fichier_source):
+    
+
+    df_infra = pd.read_csv(fichier_cible) 
+    df_bat = pd.read_csv(fichier_source)
+
+
+    df_infra.columns = df_infra.columns.str.strip()
+    df_bat.columns = df_bat.columns.str.strip()
+
+
+    colonne_id = 'id_batiment'  
+    
+
+    colonnes_a_importer = [colonne_id, 'nb_maisons', 'type_batiment'] 
+
+
+    cols_valides = [colonnes for colonnes in colonnes_a_importer if colonnes in df_bat.columns]
+
+    if len(cols_valides) > 1: 
+        
+
+        df_bat_clean = df_bat[cols_valides]
+        
+    
+        df_bat_clean = df_bat_clean.drop_duplicates(subset=colonne_id)
+
+    
+        df_final = pd.merge(df_infra, df_bat_clean, on=colonne_id, how='left')
+
+
+        df_final.to_csv(fichier_cible, index=False)
+        
+        print(f"Succès ! Les colonnes {cols_valides[1:]} ont été ajoutées.")
+        print(f"Fichier mis à jour : {fichier_cible}")
+        
+    else:
+        print("Attention : Aucune des colonnes demandées n'a été trouvée dans batiments2.csv (à part l'ID).")
+        print(f"Colonnes disponibles dans batiments2 : {list(df_bat.columns)}")
+
+else:
+    print("Un des fichiers est introuvable.")
